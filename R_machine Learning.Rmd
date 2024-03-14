@@ -1,0 +1,87 @@
+---
+title: "Machine learning"
+date: "`r Sys.Date()`"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+**Building a Decision Tree Classifier for Iris Dataset in R**
+```{r}
+# Load required libraries
+library(caret)
+library(rpart)
+library(rattle)
+
+# Load the iris dataset
+data(iris)
+
+# Print unique species values
+print(unique(iris$Species))
+
+# Print column names
+print(names(iris[,1:4]))
+
+# Print number of items in the dataset
+print(nrow(iris))
+
+# Split the dataset into training and test sets
+set.seed(121)
+index = createDataPartition(iris$Species, p = 0.5, list = FALSE)
+train = iris[index,]
+test = iris[-index,]
+
+# Fit a decision tree classifier
+clf_full = rpart(Species ~ ., data = train,
+                 control = rpart.control(minsplit = 2, minbucket = 1, cp = 0))
+
+# Plot the decision tree
+fancyRpartPlot(clf_full)
+```
+
+**Predicted Class for First Test Sample**
+```{r}
+print(test[1,])
+predict(clf_full, newdata = test[1,])
+```
+
+**Calculating Training Set Classification Accuracy**
+```{r}
+total = nrow(train)
+correct = 0
+for(i in 1:total){
+  if(train$Species[i] == predict(clf_full, newdata = train[i,], type
+                                 = "class")){
+    correct = correct + 1
+  }
+}
+accuracy = correct / total
+accuracy
+```
+
+**Calculating Test Set Classification Accuracy**
+```{r}
+sum(predict(clf_full, newdata = test, type = "class") ==
+      test$Species)/nrow(test)
+
+```
+
+**Regularization**
+```{r}
+clf_small = rpart(Species~., data =train, control =
+                    rpart.control(maxdepth = 2))
+
+fancyRpartPlot(clf_small)
+```
+
+**Calculating Training and Test Set Classification Accuracy for Small Decision Tree**
+```{r}
+
+train_acc = sum(predict(clf_small, newdata = train, type = "class") ==
+                  test$Species)/nrow(train)
+test_acc = sum(predict(clf_small, newdata = test, type = "class") ==
+                 test$Species)/nrow(test)
+print(cat("Training accuracy: ", train_acc, "Test accuracy: ",
+          test_acc))
+```
+
